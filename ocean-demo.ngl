@@ -1,0 +1,23 @@
+ngless "0.0"
+import "parallel" version "0.0"
+import "om-rgc" version "0.0"
+import "mocat" version "0.0"
+
+samples = readlines('tara.demo.sampled')
+sample = lock1(samples)
+input = load_mocat_sample(sample)
+
+preprocess(input, keep_singles=False) using |read|:
+    read = substrim(read, min_quality=25)
+    if len(read) < 45:
+        discard
+mapped = map(input, reference='om-rgc', mode_all=True)
+mapped = select(mapped, keep_if=[{mapped}, {unique}])
+collect(
+        count(mapped,
+                features=['KEGG_ko', 'eggNOG_OG'],
+                normalization={scaled}),
+        current=sample,
+        allneeded=samples,
+        ofile='omgc.profile.txt')
+
