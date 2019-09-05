@@ -67,7 +67,27 @@ DATA = [Demo(demo_name='ocean-short',
                     'ERR594/ERR594391/ERR594391_1.fastq.gz',
                     'ERR594/ERR594391/ERR594391_2.fastq.gz',
                     ],
-        })]
+        }),
+        Demo(demo_name='gut-short',
+             demo_script='gut-demo.ngl',
+             sample_file='igc.demo.short',
+             samples={
+                 'SAMEA104445453': [
+                    'ERR222/008/ERR2227338/ERR2227338_1.fastq.gz',
+                    'ERR222/008/ERR2227338/ERR2227338_2.fastq.gz',
+                    'ERR222/009/ERR2227339/ERR2227339_1.fastq.gz',
+                    'ERR222/009/ERR2227339/ERR2227339_2.fastq.gz',
+                    ],
+                'SAMEA104445455': [
+                    'ERR222/002/ERR2227342/ERR2227342_1.fastq.gz',
+                    'ERR222/002/ERR2227342/ERR2227342_2.fastq.gz',
+                    ],
+                'SAMEA104445454': [
+                    'ERR222/006/ERR2227346/ERR2227346_1.fastq.gz',
+                    'ERR222/006/ERR2227346/ERR2227346_2.fastq.gz',
+                    ]
+                 })
+     ]
 
 
 for demo in DATA:
