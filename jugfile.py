@@ -53,7 +53,7 @@ def generate_sample_file(demo_name, sample_file, samples):
 
 DATA = [Demo(demo_name='ocean-short',
              demo_script='ocean-demo.ngl',
-             sample_file='tara.demo.short',
+             sample_file='tara.demo.sampled',
              samples={
                 'SAMEA2621229': [
                     'ERR594/ERR594391/ERR594391_1.fastq.gz',
