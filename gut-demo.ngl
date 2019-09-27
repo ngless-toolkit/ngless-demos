@@ -1,15 +1,15 @@
-ngless "0.0"
-import "parallel" version "0.0"
-import "mocat" version "0.0"
+ngless "1.0"
+import "parallel" version "1.0"
+import "mocat" version "1.0"
 import "motus" version "0.1"
-import "igc" version "0.0"
+import "igc" version "0.9"
 
 samples = readlines('igc.demo.short')
 sample = lock1(samples)
 
 input = load_mocat_sample(sample)
 
-preprocess(input, keep_singles=False) using |read|:
+input = preprocess(input, keep_singles=False) using |read|:
     read = substrim(read, min_quality=25)
     if len(read) < 45:
         discard
@@ -27,7 +27,7 @@ input = as_reads(mapped)
 mapped = map(input, reference='igc', mode_all=True)
 
 counts = count(mapped,
-            features=['KEGG_ko', 'eggNOG_OG'],
+            features=['KEGG_KOs', 'OGs'],
             normalization={scaled})
 
 collect(counts,
