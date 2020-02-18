@@ -7,32 +7,47 @@ Demo = namedtuple('Demo', ['demo_name', 'demo_script', 'sample_file', 'samples']
 ENA_BASE_URL = 'http://ftp.sra.ebi.ac.uk/vol1/fastq/'
 NR_READS = 250_000
 
-@TaskGenerator
-def download_file(url, ofname):
-    from os import makedirs, path
-    if '/' in ofname:
-        makedirs(path.dirname(ofname), exist_ok=True)
-
+def gunzip_request(url):
     import requests
-    with open(ofname, 'wb') as output:
-        r = requests.get(url, stream=True)
-        for c in r.iter_content(chunk_size=8192 * 1024):
-            output.write(c)
-    return ofname
+    import zlib
+    # From the zlib documentation for the decompressobj
+    # +40 to +47 = 32 + (8 to 15):
+    #      Uses the low 4 bits of the value as the window size logarithm, and
+    #      automatically accepts either the zlib or gzip format.
+    dec = zlib.decompressobj(47)
+    r = requests.get(url, stream=True)
+    for c in r.iter_content(chunk_size=8192 * 1024):
+        yield dec.decompress(c)
+    yield dec.flush()
+
+def breakup_lines(istream):
+    prev = b''
+    for ch in istream:
+        tokens = ch.split(b'\n')
+        if not tokens:
+            continue
+        tokens[0] = prev + tokens[0]
+        prev = tokens[-1]
+        tokens = tokens[:-1]
+        for tk in tokens:
+            yield tk.decode('ascii') + '\n'
+    if prev:
+        yield prev.decode('ascii') + '\n'
 
 @TaskGenerator
-def sample_fastq(ifname, ofname, nr_reads):
+def download_sample_fastq(url, ofname, nr_reads):
     from os import makedirs, path
+    import gzip
     if '/' in ofname:
         makedirs(path.dirname(ofname), exist_ok=True)
-    import gzip
 
     with gzip.open(ofname, 'wt') as ofile:
-        with gzip.open(ifname, 'rt') as ifile:
-            for i, line in enumerate(ifile):
-                if i >= nr_reads*4:
-                    return ofname
-                ofile.write(line)
+        for i,line in enumerate(breakup_lines(gunzip_request(url))):
+            if i >= nr_reads*4:
+                print("DONE ENOUGH")
+                return ofname
+            ofile.write(line)
+    print("EOF")
     return ofname
 
 @TaskGenerator
@@ -97,10 +112,7 @@ for demo in DATA:
         for f in fs:
             fname = path.basename(f)
             ofname = f'{demo.demo_name}/{s}.sampled/{fname}'.replace('.fastq.gz', '.short.fq.gz')
-            tofname = f'{demo.demo_name}-raw-data/{s}/{fname}'
-            # Downloading and sampling should be done as a single step, avoiding  the big intermediate files
-            tofname = download_file(ENA_BASE_URL + f, tofname)
-            sample_fastq(tofname, ofname, NR_READS)
+            download_sample_fastq(ENA_BASE_URL + f, ofname, NR_READS)
     generate_sample_file(demo.demo_name, demo.sample_file, demo.samples)
 
 
