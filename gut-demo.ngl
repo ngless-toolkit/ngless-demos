@@ -1,8 +1,8 @@
-ngless "1.0"
+ngless "1.1"
 import "parallel" version "1.0"
 import "mocat" version "1.0"
 import "motus" version "0.1"
-import "igc" version "0.9"
+import "igc" version "1.0"
 
 samples = readlines('igc.demo.short')
 sample = lock1(samples)
@@ -27,7 +27,7 @@ input = as_reads(mapped)
 mapped = map(input, reference='igc', mode_all=True)
 
 counts = count(mapped,
-            features=['KEGG_KOs', 'OGs'],
+            features=['OGs'],
             normalization={scaled})
 
 collect(counts,
